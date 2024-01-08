@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_listview/player_notifier.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -23,24 +24,13 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final players = ref.watch(playerNotifierProvider);
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -53,31 +43,30 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(
               height: 20,
             ),
-            const TextField(
-              decoration: InputDecoration(
+            TextField(
+              decoration: const InputDecoration(
                 labelText: 'Search',
                 suffixIcon: Icon(Icons.search),
               ),
+              onChanged: (value) =>
+                  ref.read(playerNotifierProvider.notifier).filterPlayer(value),
             ),
             const SizedBox(
               height: 20,
             ),
-            ListView.builder(
-                itemCount: 20, itemBuilder: (context, index) => const ListTile(
-                      title: Text('Name',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)
-                              ),
-                      subtitle: Text('Country'),
-                ))
+            Expanded(
+              child: ListView.builder(
+                  itemCount: players.length,
+                  itemBuilder: (context, index) => ListTile(
+                        title: Text(players[index]['name'],
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        subtitle: Text(players[index]['Country']),
+                      )),
+            )
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
